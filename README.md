@@ -66,18 +66,23 @@ node scripts/environments_upsert.js \
 ```
 .
 ├── README.md                              # This file
-├── POSTMAN_OAS_INGESTION_PROPOSAL.md     # Full proposal and architecture
-├── session_walkthrough.md                 # Today's 60-minute session guide
+├── session_walkthrough.md                 # Complete walkthrough guide
 ├── quick_reference.md                     # Command cheat sheet
-├── manual_validation.md                   # POC steps with lessons learned
-├── docs/first_working_session.md          # First working session transcript
+├── config/
+│   └── environments.json                  # Multi-environment configuration
+├── docs/
+│   ├── POSTMAN_OAS_INGESTION_PROPOSAL.md  # Full automation proposal and architecture
+│   └── manual_validation.md               # POC steps with lessons learned
 ├── scripts/
 │   ├── spec_sync.js                       # Spec Hub sync script
 │   ├── environments_upsert.js             # Environment management script
 │   └── preflight_check.js                 # Pre-session validation
-└── state/
-    ├── README.md                          # State file documentation
-    └── postman-ingestion-state.json       # State tracking for idempotency
+├── state/
+│   ├── README.md                          # State file documentation
+│   └── postman-ingestion-state.json       # State tracking for idempotency
+└── .github/
+    └── workflows/
+        └── postman-oas-ingestion.yml      # GitHub Actions workflow
 ```
 
 ## Key Features

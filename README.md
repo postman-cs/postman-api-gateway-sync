@@ -53,8 +53,8 @@ node scripts/environments_upsert.js \
 - **[quick_reference.md](./quick_reference.md)** - One-page cheat sheet with all commands and troubleshooting
 
 ### Planning & Architecture
-- **[POSTMAN_OAS_INGESTION_PROPOSAL.md](./POSTMAN_OAS_INGESTION_PROPOSAL.md)** - Full automation proposal and architecture
-- **[manual_validation.md](./manual_validation.md)** - POC steps with lessons learned
+- **[docs/POSTMAN_OAS_INGESTION_PROPOSAL.md](./docs/POSTMAN_OAS_INGESTION_PROPOSAL.md)** - Full automation proposal and architecture
+- **[docs/manual_validation.md](./docs/manual_validation.md)** - POC steps with lessons learned
 
 ### Scripts
 - **[scripts/spec_sync.js](./scripts/spec_sync.js)** - Syncs OpenAPI specs to Postman Spec Hub and collections
@@ -127,7 +127,7 @@ Today's workflow is manual but uses scripts for reliability. Each API update req
 - Updates environments
 - Posts links to specs/collections in deployment notifications
 
-See [POSTMAN_OAS_INGESTION_PROPOSAL.md](./POSTMAN_OAS_INGESTION_PROPOSAL.md) for complete automation architecture.
+See [docs/POSTMAN_OAS_INGESTION_PROPOSAL.md](./docs/POSTMAN_OAS_INGESTION_PROPOSAL.md) for complete automation architecture.
 
 ## Troubleshooting
 

@@ -21,9 +21,12 @@ npm-debug.log*
 *.temp
 
 # Proposals and working session notes (internal only)
+# Note: docs/POSTMAN_OAS_INGESTION_PROPOSAL.md and docs/manual_validation.md are intentionally included
 *PROPOSAL.md
+!docs/POSTMAN_OAS_INGESTION_PROPOSAL.md
 *11_workingsession.md
 *validation.md
+!docs/manual_validation.md
 *local*
 *COMMANDS.md
 INTERNAL_COMMANDS.md

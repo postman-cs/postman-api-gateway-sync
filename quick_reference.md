@@ -15,6 +15,25 @@ node scripts/preflight_check.js
 
 ---
 
+## Identifying Your API Type
+
+AWS API Gateway supports two types of APIs with different CLI commands:
+
+```bash
+# Check for HTTP APIs (v2)
+aws apigatewayv2 get-apis
+
+# Check for REST APIs (v1)
+aws apigateway get-rest-apis
+```
+
+**HTTP APIs (v2)** are newer and more common for Lambda-backed services.  
+**REST APIs (v1)** are the legacy option with more features.
+
+Once you identify your API type, use the appropriate export command below.
+
+---
+
 ## AWS API Gateway Export
 
 ### HTTP API (v2) - Most Common
@@ -182,7 +201,8 @@ curl --location 'https://api.getpostman.com/me' \
 |---------|-------|----------|
 | `403 Forbidden` (Postman API) | Invalid or insufficient API key permissions | Regenerate API key in Postman Settings > API Keys with workspace write access |
 | `401 Unauthorized` (Postman API) | Expired or revoked API key | Generate new API key and update `$POSTMAN_API_KEY` |
-| `NotFoundException` (AWS) | Wrong API ID or stage name | Verify with `aws apigatewayv2 get-apis` and `get-stages` |
+| `NotFoundException` (AWS) | Wrong API ID, stage name, or API type | Verify API ID and try the other API type (HTTP v2 vs REST v1). Check with `aws apigatewayv2 get-apis` or `aws apigateway get-rest-apis` |
+| Wrong API type error | Using HTTP v2 command on REST v1 API (or vice versa) | Identify your API type first using `aws apigatewayv2 get-apis` or `aws apigateway get-rest-apis`, then use the correct export command |
 | `aws: command not found` | AWS CLI not installed | Install: `brew install awscli` (macOS) or see [AWS docs](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) |
 | `node: command not found` | Node.js not installed | Install: `nvm install 18 && nvm use 18` |
 | "Missing required env" error | Environment variable not set | `export POSTMAN_API_KEY="..." && export POSTMAN_WORKSPACE_ID="..."` |

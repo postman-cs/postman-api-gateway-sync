@@ -32,6 +32,15 @@
 
 ### A. Export OpenAPI from API Gateway (choose one):
 
+**First, identify your API type:**
+```bash
+# Check for HTTP APIs (v2)
+aws apigatewayv2 get-apis
+
+# Check for REST APIs (v1)
+aws apigateway get-rest-apis
+```
+
 - **HTTP (v2)** - Most common for Lambda-backed APIs:  
   ```bash
   aws apigatewayv2 export-api \
@@ -58,16 +67,18 @@
   curl -sSL https://<gateway-host>/openapi.json -o openapi.json
   ```
 
-**Tip**: List APIs and stages first:
+**Tip**: List APIs and stages first to identify your API type:
 ```bash
-# HTTP APIs
+# HTTP APIs (v2)
 aws apigatewayv2 get-apis
 aws apigatewayv2 get-stages --api-id <API_ID>
 
-# REST APIs  
+# REST APIs (v1)
 aws apigateway get-rest-apis
 aws apigateway get-stages --rest-api-id <REST_API_ID>
 ```
+
+**If you get a "NotFoundException"**, try the other API type - your API might be HTTP v2 instead of REST v1 (or vice versa).
 
 ---
 

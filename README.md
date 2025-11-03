@@ -18,7 +18,26 @@ export POSTMAN_WORKSPACE_ID="your-workspace-id"
 node scripts/preflight_check.js
 ```
 
+### Identifying Your API Type
+
+AWS API Gateway supports two types of APIs with different CLI commands:
+
+**Check your API type:**
+```bash
+# List HTTP APIs (v2)
+aws apigatewayv2 get-apis
+
+# List REST APIs (v1)
+aws apigateway get-rest-apis
+```
+
+**HTTP APIs (v2)** are the newer, simpler option and are more common for Lambda-backed services.  
+**REST APIs (v1)** are the legacy option with more features.
+
 ### Basic Workflow
+
+#### For HTTP APIs (v2)
+
 ```bash
 # 1. Export OpenAPI spec from API Gateway
 aws apigatewayv2 export-api \
@@ -46,6 +65,52 @@ node scripts/environments_upsert.js \
   --openapi openapi.json
 ```
 
+#### For REST APIs (v1)
+
+```bash
+# 1. Export OpenAPI spec from API Gateway
+aws apigateway get-export \
+  --rest-api-id <REST_API_ID> \
+  --stage-name <STAGE> \
+  --export-type oas30 \
+  --parameters extensions='postman' \
+  --accepts application/json \
+  openapi.json
+
+# 2. Sync to Postman Spec Hub
+node scripts/spec_sync.js \
+  --domain <domain> \
+  --service <service> \
+  --stage <stage> \
+  --openapi openapi.json \
+  --state-file state/postman-ingestion-state.json \
+  --poll
+
+# 3. Create Postman environment
+node scripts/environments_upsert.js \
+  --domain <domain> \
+  --service <service> \
+  --stage <stage> \
+  --region <region> \
+  --openapi openapi.json
+```
+
+**Note**: Steps 2 and 3 are identical for both API types - only the export command differs.
+
+#### Alternative: Use Helper Script (Auto-Detection)
+
+Instead of manually choosing the export command, you can use the helper script that auto-detects your API type:
+
+```bash
+# Auto-detect API type and export
+node scripts/export_openapi.js \
+  --api-id <API_ID> \
+  --stage <STAGE> \
+  --output openapi.json
+
+# Then continue with steps 2 and 3 as above
+```
+
 ## Documentation
 
 ### For Today's Session
@@ -57,6 +122,7 @@ node scripts/environments_upsert.js \
 - **[docs/manual_validation.md](./docs/manual_validation.md)** - POC steps with lessons learned
 
 ### Scripts
+- **[scripts/export_openapi.js](./scripts/export_openapi.js)** - Auto-detects and exports OpenAPI specs from AWS API Gateway (supports HTTP v2 and REST v1)
 - **[scripts/spec_sync.js](./scripts/spec_sync.js)** - Syncs OpenAPI specs to Postman Spec Hub and collections
 - **[scripts/environments_upsert.js](./scripts/environments_upsert.js)** - Creates/updates Postman environments
 - **[scripts/preflight_check.js](./scripts/preflight_check.js)** - Validates prerequisites before running workflow
@@ -105,7 +171,7 @@ node scripts/environments_upsert.js \
 ## Lessons Learned (Initial Implementation)
 
 ### What Worked
-- AWS API Gateway v2 (HTTP API) export via AWS CLI
+- AWS API Gateway export via AWS CLI (both HTTP API v2 and REST API v1)
 - Postman workspace creation and API key generation
 - Identifying correct API Gateway types
 
@@ -121,7 +187,7 @@ node scripts/environments_upsert.js \
 
 ### Current State (Manual but Scripted)
 Today's workflow is manual but uses scripts for reliability. Each API update requires:
-1. Export spec from AWS
+1. Export spec from AWS (manual AWS CLI command or use `export_openapi.js` helper)
 2. Run `spec_sync.js`
 3. Run `environments_upsert.js`
 
@@ -144,6 +210,8 @@ See [docs/POSTMAN_OAS_INGESTION_PROPOSAL.md](./docs/POSTMAN_OAS_INGESTION_PROPOS
 | `aws: command not found` | Install AWS CLI: `brew install awscli` |
 | `node: command not found` | Install Node.js v18+: `nvm install 18` |
 | Collection not syncing | Generate collection in Postman UI from spec first |
+| `NotFoundException` (AWS) | Verify API ID and try the other API type (HTTP v2 vs REST v1) |
+| Wrong API type error | Use `aws apigatewayv2 get-apis` or `aws apigateway get-rest-apis` to identify your API type |
 
 See [quick_reference.md](./quick_reference.md) for complete troubleshooting matrix.
 

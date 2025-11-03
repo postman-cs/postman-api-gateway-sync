@@ -44,7 +44,7 @@ Confirm connectivity and credentials upfront to prevent common errors during the
 **Option 1: Using environment variables** (recommended for production/shared use):
 ```bash
 # Navigate to project directory
-cd /path/to/ATT-demo-walkthrough
+cd /path/to/project-dir
 
 # Set environment variables from .env file (if using dotenv) or export manually
 export POSTMAN_API_KEY="your-postman-api-key-here"
@@ -81,21 +81,32 @@ node scripts/preflight_check.js
 
 ### Step 3.1: Export OpenAPI Spec from AWS API Gateway
 
-**Action**: Export the spec from your API Gateway (HTTP API v2).
+**Action**: Export the spec from your API Gateway. AWS API Gateway supports two types: HTTP APIs (v2) and REST APIs (v1).
 
-First, identify your API ID and stage:
+#### Step 3.1.1: Identify Your API Type
+
+First, determine which type of API Gateway you're using:
+
 ```bash
-# List all HTTP APIs
+# Check for HTTP APIs (v2)
 aws apigatewayv2 get-apis
 
-# List stages for a specific API
-aws apigatewayv2 get-stages --api-id <YOUR_API_ID>
+# Check for REST APIs (v1)
+aws apigateway get-rest-apis
 ```
 
-**From previous session**: Your API ID was similar to `mp4fxy1oj` (confirm actual ID).
+**Note**: HTTP APIs (v2) are newer and more common for Lambda-backed services. REST APIs (v1) are the legacy option with more features.
 
-Export the spec:
+#### Step 3.1.2: Export the Spec
+
+Once you know your API type, use the appropriate command:
+
+**For HTTP APIs (v2):**
 ```bash
+# List stages for a specific HTTP API
+aws apigatewayv2 get-stages --api-id <YOUR_API_ID>
+
+# Export OpenAPI spec
 aws apigatewayv2 export-api \
   --api-id <YOUR_API_ID> \
   --output-type JSON \
@@ -104,17 +115,24 @@ aws apigatewayv2 export-api \
   openapi.json
 ```
 
-**Example with actual values**:
+**For REST APIs (v1):**
 ```bash
-aws apigatewayv2 export-api \
-  --api-id <YOUR_API_ID> \
-  --output-type JSON \
-  --specification OAS30 \
-  --stage-name dev \
+# List stages for a specific REST API
+aws apigateway get-stages --rest-api-id <YOUR_REST_API_ID>
+
+# Export OpenAPI spec
+aws apigateway get-export \
+  --rest-api-id <YOUR_REST_API_ID> \
+  --stage-name <YOUR_STAGE> \
+  --export-type oas30 \
+  --parameters extensions='postman' \
+  --accepts application/json \
   openapi.json
 ```
 
-**Validation**: Check the exported file contains valid JSON:
+#### Step 3.1.3: Validate the Export
+
+Check the exported file contains valid JSON:
 ```bash
 # View first few lines
 head -20 openapi.json
@@ -126,9 +144,9 @@ cat openapi.json | jq . > /dev/null && echo "Valid JSON" || echo "Invalid JSON"
 **Expected**: File should contain `"openapi": "3.0.1"` or similar near the top.
 
 **Troubleshooting**:
-- If "NotFoundException": Wrong API ID - double-check with `get-apis` command
+- If "NotFoundException": Wrong API ID or API type - try the other API type (HTTP v2 vs REST v1)
 - If "Invalid stage identifier": Use exact stage name from `get-stages` output
-- If using REST API v1 instead: Use `aws apigateway get-export --rest-api-id ... --stage-name ... --export-type oas30 openapi.json`
+- If unsure of API type: Check both `aws apigatewayv2 get-apis` and `aws apigateway get-rest-apis` to find your API
 
 ### Step 3.2: Run spec_sync.js to Upload to Postman Spec Hub
 
@@ -482,6 +500,13 @@ What we did today was manual but scripted. For each API update:
 1. Check file size: `ls -lh openapi.json`
 2. Consider splitting into multiple specs
 3. Remove unnecessary examples/descriptions if possible
+
+### Problem: "NotFoundException" when exporting OpenAPI spec
+**Cause**: Wrong API ID, stage name, or API type.  
+**Solution**: 
+1. Verify API ID is correct: Use `aws apigatewayv2 get-apis` or `aws apigateway get-rest-apis` to list your APIs
+2. Verify stage name: Use `aws apigatewayv2 get-stages --api-id <ID>` or `aws apigateway get-stages --rest-api-id <ID>`
+3. Try the other API type: Your API might be HTTP v2 instead of REST v1 (or vice versa)
 
 ### Problem: Environment created but baseUrl is missing
 **Cause**: OpenAPI spec doesn't include `servers[0].url`.  
